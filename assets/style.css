@@ -1,0 +1,8 @@
+/* Custom styles (loaded after Tailwind). Add your own CSS here. */
+::selection{background:#e60012;color:#fff}
+html{scrollbar-color:#e60012 #fff1f2}
+::-webkit-scrollbar{width:10px}
+::-webkit-scrollbar-track{background:#fff1f2}
+::-webkit-scrollbar-thumb{background:#e60012;border-radius:10px}
+nav::-webkit-scrollbar{display:none}
+input[type=number]::-webkit-inner-spin-button{opacity:1}
