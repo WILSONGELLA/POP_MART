@@ -32,13 +32,13 @@ $page = $_GET['page'] ?? 'home';
 $series = array_values(array_unique(array_column($products,'series')));
 
 
-function pimg($p,$cls=''){ return !empty($p['image']) ? '<img src="'.e($p['image']).'" alt="'.e($p['name']).'" loading="lazy" onerror="this.remove()" class="absolute inset-0 h-full w-full object-cover '.$cls.'">' : ''; }
+function pimg($p,$cls=''){ $src=$p['image'] ?? ''; $path=__DIR__.'/'.ltrim($src,'/'); return !empty($src) && is_file($path) ? '<img src="'.e($src).'" alt="'.e($p['name']).'" loading="lazy" class="absolute inset-0 h-full w-full object-cover '.$cls.'">' : ''; }
 function card($id,$p){ ob_start(); $tc=['HOT'=>'bg-red-500','NEW'=>'bg-emerald-500','LIMITED'=>'bg-violet-600']; ?>
   <a href="?page=product&id=<?=$id?>" class="group block overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-black/5 transition duration-300 hover:-translate-y-2 hover:shadow-2xl">
     <div class="relative grid aspect-square place-items-center" style="background:<?=e($p['bg'])?>">
       <?=pimg($p,'transition duration-500 group-hover:scale-110')?>
       <?php if($p['tag']):?><span class="absolute left-3 top-3 rounded-full px-3 py-1 text-[11px] font-bold tracking-wide text-white <?=$tc[$p['tag']]??'bg-black'?>"><?=e($p['tag'])?></span><?php endif;?>
-      <span class="text-7xl drop-shadow-lg transition duration-300 group-hover:scale-125 group-hover:rotate-6"><?=$p['emoji']?></span>
+
       <span class="absolute bottom-3 right-3 translate-y-4 rounded-full bg-black px-4 py-2 text-xs font-semibold text-white opacity-0 transition group-hover:translate-y-0 group-hover:opacity-100">View →</span>
     </div>
     <div class="p-4"><p class="text-[11px] font-semibold uppercase tracking-widest text-gray-400"><?=e($p['series'])?></p>
@@ -58,8 +58,8 @@ $h2='mb-6 mt-14 text-2xl font-extrabold tracking-tight sm:text-3xl';
 </head>
 <body class="bg-gradient-to-b from-rose-50/60 via-white to-white font-sans text-gray-900 antialiased">
 
-<div class="overflow-hidden bg-black py-2 text-xs font-medium text-white"><div class="flex w-max animate-marquee gap-12 whitespace-nowrap">
-  <?php for($i=0;$i<8;$i++) echo '<span>🚚 Free shipping over ₱2,000</span><span>✨ New blind boxes every Friday</span>'; ?></div></div>
+<div class="overflow-hidden bg-black py-2 text-xs font-medium text-white"><div class="flex w-max animate-marquee gap-12 whitespace-nowrap"></div></div>
+
 
 <header class="sticky top-0 z-50 border-b border-black/5 bg-white/80 backdrop-blur-xl">
   <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-4 px-4 py-3 sm:px-6">
@@ -67,12 +67,13 @@ $h2='mb-6 mt-14 text-2xl font-extrabold tracking-tight sm:text-3xl';
     <nav class="order-last flex w-full gap-5 overflow-x-auto text-sm font-semibold text-gray-600 lg:order-none lg:w-auto lg:flex-1">
       <a class="whitespace-nowrap hover:text-red-600" href="?page=shop">All</a>
       <a class="whitespace-nowrap hover:text-red-600" href="?page=shop&sort=new">New</a>
-      <a class="whitespace-nowrap hover:text-red-600" href="?page=shop&tag=HOT">🔥 Hot</a>
+      <a class="whitespace-nowrap hover:text-red-600" href="?page=shop&tag=HOT">Hot</a>
       <?php foreach($series as $s):?><a class="whitespace-nowrap hover:text-red-600" href="?page=shop&series=<?=urlencode($s)?>"><?=e($s)?></a><?php endforeach;?>
     </nav>
     <form action="" method="get" class="ml-auto"><input type="hidden" name="page" value="shop">
-      <input name="q" value="<?=e($_GET['q']??'')?>" placeholder="🔍 Search figures…" class="w-40 rounded-full bg-gray-100 px-4 py-2 text-sm outline-none transition focus:w-60 focus:bg-white focus:ring-2 focus:ring-red-400 sm:w-52"></form>
-    <a href="?page=cart" class="relative rounded-full bg-gray-100 p-2.5 text-lg transition hover:bg-red-100">🛒
+      <input name="q" value="<?=e($_GET['q']??'')?>" placeholder="Search figures…" class="w-40 rounded-full bg-gray-100 px-4 py-2 text-sm outline-none transition focus:w-60 focus:bg-white focus:ring-2 focus:ring-red-400 sm:w-52"></form>
+    <a href="?page=cart" class="relative grid h-11 w-11 place-items-center rounded-full bg-gray-100 transition hover:bg-red-100" aria-label="Shopping cart">
+      <svg viewBox="0 0 24 24" class="h-5 w-5 fill-none stroke-current stroke-2" aria-hidden="true"><path d="M3 4h2l2.2 9.2A2 2 0 0 0 9.1 15h7.8a2 2 0 0 0 2-1.6L20 7H6"/><circle cx="10" cy="18" r="1.5"/><circle cx="17" cy="18" r="1.5"/></svg>
       <?php if(cartCount()):?><span class="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-red-600 px-1 text-[11px] font-bold text-white"><?=cartCount()?></span><?php endif;?></a>
   </div>
 </header>
@@ -83,27 +84,26 @@ $h2='mb-6 mt-14 text-2xl font-extrabold tracking-tight sm:text-3xl';
     <div class="absolute -right-10 -top-10 h-72 w-72 rounded-full bg-white/20 blur-3xl"></div>
     <div class="relative grid items-center gap-8 md:grid-cols-2">
       <div><span class="rounded-full bg-white/20 px-4 py-1 text-xs font-bold uppercase tracking-widest backdrop-blur">New Drop · Blind Box</span>
-        <h1 class="mt-5 text-4xl font-black leading-tight sm:text-6xl">Unbox the<br>unexpected ✨</h1>
+        <h1 class="mt-5 text-4xl font-black leading-tight sm:text-6xl">Unbox the<br>unexpected</h1>
         <p class="mt-4 max-w-md text-white/90">Collect Labubu, Molly, Skullpanda, Dimoo and more. Which secret one will you get?</p>
         <a href="?page=shop" class="mt-7 inline-block rounded-full bg-white px-8 py-3 font-bold text-rose-600 shadow-xl transition hover:scale-105">Shop Now →</a></div>
       <div class="relative hidden h-72 md:block">
-        <span class="absolute left-4 top-2 animate-float text-8xl">🧸</span>
-        <span class="absolute right-10 top-16 animate-float text-7xl [animation-delay:1s]">🎁</span>
-        <span class="absolute bottom-0 left-28 animate-float text-8xl [animation-delay:2s]">💀</span></div>
+        <div class="absolute inset-0 rounded-3xl bg-white/10"></div>
+      </div>
     </div>
   </section>
 
   <div class="mt-8 grid grid-cols-1 gap-4 text-sm font-semibold sm:grid-cols-3">
-    <?php foreach([['🚚','Fast Delivery','Ships within 24 hours'],['🔒','Secure Checkout','Your data stays safe'],['💯','100% Authentic','Official collectibles']] as $f):?>
-    <div class="flex items-center gap-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5"><span class="text-3xl"><?=$f[0]?></span><div><p><?=$f[1]?></p><p class="text-xs font-normal text-gray-500"><?=$f[2]?></p></div></div><?php endforeach;?></div>
+    <?php foreach([['Fast Delivery','Ships within 24 hours'],['Secure Checkout','Your data stays safe'],['100% Authentic','Official collectibles']] as $f):?>
+    <div class="flex items-center gap-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5"><div><p><?=$f[0]?></p><p class="text-xs font-normal text-gray-500"><?=$f[1]?></p></div></div><?php endforeach;?></div>
 
   <h2 class="<?=$h2?>">Shop by Series</h2>
   <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-    <?php $ic=['THE MONSTERS'=>'🧸','MOLLY'=>'🎨','SKULLPANDA'=>'💀','DIMOO'=>'🌙','CRYBABY'=>'😭','HIRONO'=>'🎭']; foreach($series as $s):?>
+    <?php foreach($series as $s):?>
     <a href="?page=shop&series=<?=urlencode($s)?>" class="group rounded-3xl bg-white p-5 text-center shadow-sm ring-1 ring-black/5 transition hover:-translate-y-1 hover:bg-gradient-to-br hover:from-rose-500 hover:to-fuchsia-500 hover:text-white hover:shadow-xl">
-      <div class="text-4xl transition group-hover:scale-125"><?=$ic[$s]??'🎁'?></div><p class="mt-2 text-xs font-bold tracking-wide"><?=e($s)?></p></a><?php endforeach;?></div>
+      <p class="mt-2 text-xs font-bold tracking-wide"><?=e($s)?></p></a><?php endforeach;?></div>
 
-  <h2 class="<?=$h2?>">🔥 Trending Now</h2>
+  <h2 class="<?=$h2?>">Trending Now</h2>
   <div class="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4"><?php foreach($products as $id=>$p) if(in_array($p['tag'],['HOT','NEW','LIMITED'])) echo card($id,$p);?></div>
 
 <?php elseif ($page==='shop'):
@@ -119,37 +119,37 @@ $h2='mb-6 mt-14 text-2xl font-extrabold tracking-tight sm:text-3xl';
       <?php foreach($series as $x):?><a href="?page=shop&series=<?=urlencode($x)?>" class="rounded-full px-4 py-1.5 text-sm font-semibold ring-1 ring-gray-200 transition hover:bg-black hover:text-white <?=$x===$s?'bg-black text-white':'bg-white'?>"><?=e($x)?></a><?php endforeach;?></div>
     <div class="flex gap-2 text-sm"><a class="rounded-full bg-white px-4 py-1.5 ring-1 ring-gray-200 hover:ring-red-400" href="?page=shop&sort=low">Price ↑</a><a class="rounded-full bg-white px-4 py-1.5 ring-1 ring-gray-200 hover:ring-red-400" href="?page=shop&sort=high">Price ↓</a></div></div>
   <div class="mt-8 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4"><?php foreach($list as $id=>$p) echo card($id,$p);?></div>
-  <?php if(!$list) echo '<div class="py-20 text-center"><p class="text-6xl">🔎</p><p class="mt-3 text-gray-500">No products found.</p></div>'; ?>
+  <?php if(!$list) echo '<div class="py-20 text-center"><p class="mt-3 text-gray-500">No products found.</p></div>'; ?>
 
 <?php elseif ($page==='product'): $id=(int)($_GET['id']??0); if(!isset($products[$id])){echo '<p>Product not found.</p>';} else { $p=$products[$id]; ?>
   <a href="?page=shop" class="text-sm font-semibold text-gray-500 hover:text-red-600">← Back to shop</a>
   <div class="mt-5 grid gap-10 md:grid-cols-2">
-    <div class="relative grid aspect-square place-items-center overflow-hidden rounded-[2.5rem] shadow-xl" style="background:<?=e($p['bg'])?>"><?=pimg($p)?><span class="animate-float text-[9rem] drop-shadow-2xl sm:text-[12rem]"><?=$p['emoji']?></span></div>
+    <div class="relative grid aspect-square place-items-center overflow-hidden rounded-[2.5rem] shadow-xl" style="background:<?=e($p['bg'])?>"><?=pimg($p)?></div>
     <div class="flex flex-col justify-center">
       <p class="text-xs font-bold uppercase tracking-widest text-gray-400"><?=e($p['series'])?></p>
       <h1 class="mt-2 text-3xl font-black sm:text-4xl"><?=e($p['name'])?></h1>
       <p class="mt-4 text-4xl font-black text-red-600"><?=money($p['price'])?></p>
       <p class="mt-5 leading-relaxed text-gray-600"><?=e($p['desc'])?></p>
-      <div class="mt-5 flex flex-wrap gap-2 text-xs font-semibold"><span class="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">✔ In stock</span><span class="rounded-full bg-gray-100 px-3 py-1">🚚 Ships in 24h</span><span class="rounded-full bg-gray-100 px-3 py-1">💯 Authentic</span></div>
+      <div class="mt-5 flex flex-wrap gap-2 text-xs font-semibold"><span class="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">In stock</span><span class="rounded-full bg-gray-100 px-3 py-1">Ships in 24h</span><span class="rounded-full bg-gray-100 px-3 py-1">Authentic</span></div>
       <form method="post" class="mt-8 flex flex-wrap items-center gap-4"><input type="hidden" name="csrf" value="<?=csrf()?>"><input type="hidden" name="action" value="add"><input type="hidden" name="id" value="<?=$id?>">
         <input type="number" name="qty" value="1" min="1" max="10" class="w-24 rounded-full border border-gray-200 px-4 py-3 text-center font-bold outline-none focus:ring-4 focus:ring-red-100">
-        <button class="<?=$btn?>">🛒 Add to Cart</button></form></div></div>
+        <button class="<?=$btn?>">Add to Cart</button></form></div></div>
   <h2 class="<?=$h2?>">You may also like</h2>
   <div class="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4"><?php $n=0; foreach($products as $i=>$x){ if($i!=$id && $x['series']===$p['series'] && $n++<4) echo card($i,$x);} ?></div>
 <?php } ?>
 
 <?php elseif ($page==='cart'): ?>
-  <h1 class="text-3xl font-black">Shopping Cart 🛒</h1>
-  <?php if(!$cart): ?><div class="py-24 text-center"><p class="text-7xl">🫥</p><p class="mt-4 text-gray-500">Your cart is empty.</p><a href="?page=shop" class="<?=$btn?> mt-6">Start Shopping</a></div>
+  <h1 class="text-3xl font-black">Shopping Cart</h1>
+  <?php if(!$cart): ?><div class="py-24 text-center"><p class="mt-4 text-gray-500">Your cart is empty.</p><a href="?page=shop" class="<?=$btn?> mt-6">Start Shopping</a></div>
   <?php else: ?>
   <div class="mt-8 grid gap-8 lg:grid-cols-3"><div class="space-y-4 lg:col-span-2">
     <?php foreach($cart as $id=>$q): $p=$products[$id]; ?>
     <div class="flex items-center gap-4 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-black/5">
-      <a href="?page=product&id=<?=$id?>" class="relative grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-2xl text-5xl" style="background:<?=e($p['bg'])?>"><?=pimg($p)?><?=$p['emoji']?></a>
+      <a href="?page=product&id=<?=$id?>" class="relative grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-2xl" style="background:<?=e($p['bg'])?>"><?=pimg($p)?></a>
       <div class="min-w-0 flex-1"><p class="text-[11px] font-bold uppercase tracking-widest text-gray-400"><?=e($p['series'])?></p><h3 class="truncate font-bold"><?=e($p['name'])?></h3><p class="font-extrabold text-red-600"><?=money($p['price']*$q)?></p>
         <form method="post" class="mt-2 flex items-center gap-2"><input type="hidden" name="csrf" value="<?=csrf()?>"><input type="hidden" name="action" value="update"><input type="hidden" name="id" value="<?=$id?>">
           <input type="number" name="qty" value="<?=$q?>" min="0" max="10" class="w-16 rounded-full border px-3 py-1 text-center text-sm"><button class="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold hover:bg-black hover:text-white">Update</button></form></div>
-      <form method="post"><input type="hidden" name="csrf" value="<?=csrf()?>"><input type="hidden" name="action" value="remove"><input type="hidden" name="id" value="<?=$id?>"><button class="grid h-9 w-9 place-items-center rounded-full text-gray-400 transition hover:bg-red-50 hover:text-red-600">✕</button></form>
+      <form method="post"><input type="hidden" name="csrf" value="<?=csrf()?>"><input type="hidden" name="action" value="remove"><input type="hidden" name="id" value="<?=$id?>"><button class="grid h-9 w-9 place-items-center rounded-full text-gray-400 transition hover:bg-red-50 hover:text-red-600">Remove</button></form>
     </div><?php endforeach;?></div>
     <aside class="h-fit rounded-3xl bg-white p-6 shadow-lg ring-1 ring-black/5 lg:sticky lg:top-24">
       <h2 class="text-lg font-extrabold">Order Summary</h2>
@@ -166,12 +166,12 @@ $h2='mb-6 mt-14 text-2xl font-extrabold tracking-tight sm:text-3xl';
     <input type="hidden" name="csrf" value="<?=csrf()?>"><input type="hidden" name="action" value="checkout">
     <input name="name" placeholder="Full name" required class="<?=$inp?>"><input name="email" type="email" placeholder="Email address" required class="<?=$inp?>">
     <textarea name="address" rows="3" placeholder="Shipping address" required class="<?=$inp?>"></textarea>
-    <div class="flex justify-between rounded-2xl bg-rose-50 p-4 text-sm font-semibold"><span>💵 Cash on delivery (demo)</span><span class="text-red-600"><?=money(cartTotal())?></span></div>
+    <div class="flex justify-between rounded-2xl bg-rose-50 p-4 text-sm font-semibold"><span>Cash on delivery (demo)</span><span class="text-red-600"><?=money(cartTotal())?></span></div>
     <button class="<?=$btn?> w-full">Place Order</button></form>
 
 <?php elseif ($page==='success'): $o=$_SESSION['order']??null; if(!$o) go('?'); ?>
   <div class="mx-auto max-w-lg rounded-[2.5rem] bg-white p-10 text-center shadow-2xl ring-1 ring-black/5">
-    <div class="animate-float text-7xl">🎉</div><h1 class="mt-4 text-3xl font-black">Thank you, <?=e($o['name'])?>!</h1>
+    <h1 class="mt-4 text-3xl font-black">Thank you, <?=e($o['name'])?>!</h1>
     <p class="mt-3 text-gray-600">Order <b class="text-red-600"><?=e($o['no'])?></b> is confirmed.<br>Total paid on delivery: <b><?=money($o['total'])?></b></p>
     <p class="mt-1 text-xs text-gray-400">Confirmation would be sent to <?=e($o['email'])?></p><a href="?" class="<?=$btn?> mt-8">Back to Home</a></div>
 <?php else: echo '<p>Page not found.</p>'; endif; ?>
