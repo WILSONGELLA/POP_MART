@@ -1,8 +1,13 @@
-/* Custom styles (loaded after Tailwind). Add your own CSS here. */
-::selection{background:#e60012;color:#fff}
-html{scrollbar-color:#e60012 #fff1f2}
-::-webkit-scrollbar{width:10px}
-::-webkit-scrollbar-track{background:#fff1f2}
-::-webkit-scrollbar-thumb{background:#e60012;border-radius:10px}
+/* ROCK BOTTOM theme (loaded after Tailwind) */
+body{background:#fff7c2 radial-gradient(#00000014 1.5px,transparent 1.5px) 0 0/18px 18px}
+::selection{background:#000;color:#ffe600}
+html{scrollbar-color:#000 #ffe600}
+::-webkit-scrollbar{width:14px}
+::-webkit-scrollbar-track{background:#ffe600;border-left:3px solid #000}
+::-webkit-scrollbar-thumb{background:#000}
 nav::-webkit-scrollbar{display:none}
 input[type=number]::-webkit-inner-spin-button{opacity:1}
+.display{font-family:'Archivo Black',Impact,'Arial Black',sans-serif;letter-spacing:-.01em}
+@keyframes pop{0%{transform:scale(.96)}100%{transform:scale(1)}}
+.bar{transform-origin:bottom;animation:grow .6s ease-out both}
+@keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
